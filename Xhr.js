@@ -36,8 +36,14 @@ class Xhr {
             var m = method || 'GET';
             xhr.open(m, url);
             // Set headers
-            xhr.setRequestHeader('Content-type', this.opts.contentType || 'application/json');
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('Content-Type', this.opts.contentType || 'application/json');
+            // Custom
+            if(this.opts.headers) {
+                for(var name in this.opts.headers) {
+                    var value = this.opts.headers[name];
+                    xhr.setRequestHeader(name, value);
+                }
+            }
             // Transmit credentials
             if(this.opts.withCredentials) xhr.withCredentials = true;
             data = data ? this.parseData(data) : null;
