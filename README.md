@@ -43,5 +43,21 @@ Main method:
 xhr.send(url, method, data);
 ```
 
+## Instalation
+
+Npm:
+
+```
+npm install kysonic-es6-xhr --save-dev
+```
+
+GIT: 
+
+```
+git clone https://github.com/kysonic/xhr.git
+```
+
+
+
 
 
