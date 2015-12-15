@@ -138,4 +138,4 @@ class Xhr {
     }
 }
 
-export default Test;
+export default Xhr;
