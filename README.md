@@ -43,7 +43,7 @@ Main method:
 xhr.send(url, method, data);
 ```
 
-## Instalation
+## Installation
 
 Npm:
 
