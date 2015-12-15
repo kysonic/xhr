@@ -36,20 +36,20 @@ class Xhr {
             var m = method || 'GET';
             xhr.open(m, url);
             // Set headers
-            this.xhr.setRequestHeader('Content-type', this.opts.contentType || 'application/json');
-            this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('Content-type', this.opts.contentType || 'application/json');
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             // Transmit credentials
             if(this.opts.withCredentials) xhr.withCredentials = true;
             data = data ? this.parseData(data) : null;
 
             xhr.addEventListener(this.events.LOAD,  ()=>{
                 // ==0 for files.
-                if ((this.xhr.status >= 200 && this.xhr.status < 300) || this.xhr.status==0) {
+                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status==0) {
                     let responseText = '';
                     if (xhr.responseText) {
                         responseText =  this.opts.json ? JSON.parse(xhr.responseText) : xhr.responseText;
                     }
-                    resolve(responseText,this.xhr);
+                    resolve(responseText,xhr);
                 } else {
                     reject(this.reject(xhr));
                 }
