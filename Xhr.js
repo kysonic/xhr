@@ -1,3 +1,4 @@
+//var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest; # Unkoment this for NODE.JS 
 /**
  * XmlHttpRequest for you es6 project. Required features only.
  * Create xhr instance:
