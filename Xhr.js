@@ -95,7 +95,7 @@ class Xhr {
      */
     parseData(data){
         // JSON
-        if(this.contentType=='application/json') return JSON.stringify(data);
+        if(this.opts.contentType=='application/json') return JSON.stringify(data);
         // Query string
         var query = [];
         if(((typeof data).toLowerCase()=='string') || (typeof data).toLowerCase()=='number') {
