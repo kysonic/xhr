@@ -1,148 +1,139 @@
-//var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest; # Uncomment this for NODE.JS 
-/**
- * XmlHttpRequest for you es6 project. Required features only.
- * Create xhr instance:
- * var xhr = new Xhr(opts);
- * xhr.post('http://url.com',{data:123}).then(function(response){...},function(err){...});
- * Options:
- *    withCredentials - Adds cookie and auth data to request. CORS fetures.
- *    contentType - content type header,
- *    json - Handle response as JSON.
- */
-class Xhr {
-    constructor(opts){
-        this.events = {
-            READY_STATE_CHANGE: 'readystatechange',
-            LOAD_START: 'loadstart',
-            PROGRESS: 'progress',
-            ABORT: 'abort',
-            ERROR: 'error',
-            LOAD: 'load',
-            TIMEOUT: 'timeout',
-            LOAD_END: 'loadend'
-        };
-        this.opts = opts;
-    }
+var xhr = function(){
+  return {
+    opts: {
+      contentType: 'application/json',
+      handleAs: 'json',
+      preventCache:false,
+      formData: false,
+      withCredentials: false
+    },
+    events: {
+      READY_STATE_CHANGE: 'readystatechange',
+      LOAD_START: 'loadstart',
+      PROGRESS: 'progress',
+      ABORT: 'abort',
+      ERROR: 'error',
+      LOAD: 'load',
+      TIMEOUT: 'timeout',
+      LOAD_END: 'loadend'
+    },
     /**
-     * Send
-     * @param url - URL to request
-     * @param callback
-     * @param method
-     * @param data
-     * @param sync
+     * Main method. Will help to create new xhr object. Work with it.
+     * And finally send it.
+     * @param url - url on which will be made request
+     * @param method - HTTP method
+     * @data - body of request.
      */
-    send(url, method, data){
-        return new Promise((resolve,reject)=>{
-            var xhr = new XMLHttpRequest();
-            var m = method || 'GET';
-            xhr.open(m, url);
-            // Set headers
-            xhr.setRequestHeader('Content-Type', this.opts.contentType || 'application/json');
-            // Custom
-            if(this.opts.headers) {
-                for(var name in this.opts.headers) {
-                    var value = this.opts.headers[name];
-                    xhr.setRequestHeader(name, value);
-                }
+    send: function (url, method, data) {
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = this.opts.withCredentials;
+        var m = method || 'GET';
+        xhr.open(m, url+(this.opts.preventCache?/\?/.test(url)?'&t='+Math.random():'?t='+Math.random():''));
+        // Set headers
+        if(!this.opts.formData) xhr.setRequestHeader('Content-Type', this.opts.contentType);
+        //if(this.opts.handleAs) xhr.setRequestHeader('accept', 'application/json');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        // Parse data
+        data = data ? this.parseData(data) : null;
+        // When request is loaded
+        xhr.addEventListener(this.events.LOAD, function () {
+          if ((xhr.status >= 200 && xhr.status < 300) || xhr.status==0) {
+            var responseText = '';
+            if (xhr.responseText) {
+              try {
+                responseText = this.opts.handleAs=='json' ? JSON.parse(xhr.responseText) : xhr.responseText;
+              }catch(e){
+                reject(this.reject(xhr))
+              }
             }
-            // Transmit credentials
-            if(this.opts.withCredentials) xhr.withCredentials = true;
-            data = data ? this.parseData(data) : null;
-
-            xhr.addEventListener(this.events.LOAD,  ()=>{
-                // ==0 for files.
-                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status==0) {
-                    let responseText = '';
-                    if (xhr.responseText) {
-                        responseText =  this.opts.json ? JSON.parse(xhr.responseText) : xhr.responseText;
-                    }
-                    resolve(responseText,xhr);
-                } else {
-                    reject(this.reject(xhr));
-                }
-            });
-            // Handle basic events
-            xhr.addEventListener(this.events.ABORT, ()=>{
-                return reject(this.reject(xhr));
-            });
-            xhr.addEventListener(this.events.ERROR, ()=>{
-                return reject(this.reject(xhr));
-            });
-            xhr.addEventListener(this.events.TIMEOUT, ()=>{
-                return reject(this.reject(xhr));
-            });
-
-            data?xhr.send(data):xhr.send();
-        });
-    }
-
+            resolve(responseText, xhr);
+          } else {
+            reject(this.reject(xhr));
+          }
+        }.bind(this));
+        // Handle basic events
+        xhr.addEventListener(this.events.ABORT, function () {
+          return reject(this.reject(xhr));
+        }.bind(this));
+        xhr.addEventListener(this.events.ERROR, function () {
+          return reject(this.reject(xhr));
+        }.bind(this));
+        xhr.addEventListener(this.events.TIMEOUT, function () {
+          return reject(this.reject(xhr));
+        }.bind(this));
+        // Send request
+        data ? xhr.send(data) : xhr.send();
+      }.bind(this));
+    },
     /**
-     * Reject handler.
-     * @param xhr
-     * @returns {string}
+     * When request got negative response
+     * handle it
      */
-    reject(xhr){
-        let responseText = '';
-        if (xhr.responseText) {
-            responseText =  this.opts.json ? JSON.parse(xhr.responseText) : xhr.responseText;
+    reject: function(xhr) {
+      var responseText = '';
+      if (xhr.responseText) {
+        try {
+          responseText = this.opts.handleAs=='json' ? JSON.parse(xhr.responseText) : xhr.responseText;
+        }catch(e){
+          responseText = 'Parsing error '+ e.message;
         }
-        return responseText;
-    }
-
+      }
+      return responseText;
+    },
     /**
-     * Create query string
+     * Parse data to convert it in query string or JSON.
      * @param data
      * @returns {Array}
      */
-    parseData(data){
-        // JSON
-        if(this.opts.contentType=='application/json') return JSON.stringify(data);
-        // Query string
-        var query = [];
-        if(((typeof data).toLowerCase()=='string') || (typeof data).toLowerCase()=='number') {
-            query.push(data);
-        }else {
-            for (var key in data) {
-                query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
-            }
+    parseData: function(data){
+      if(this.opts.formData && data instanceof FormData) return data;
+      // JSON
+      if(this.opts.contentType=='application/json') return JSON.stringify(data);
+      // Query string
+      var query = [];
+      if(((typeof data).toLowerCase()=='string') || (typeof data).toLowerCase()=='number') {
+        query.push(data);
+      }else {
+        for (var key in data) {
+          query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
         }
-
-        return query.join('&');
-    }
+      }
+      return query.join('&');
+    },
     /**
      * GET Wrapper
      * @param url
      * @returns {*}
      */
-    get(url){
-        return this.send(url);
-    }
+    get: function(url){
+      return this.send(url);
+    },
     /**
      * POST Wrapper
      * @param url
      * @param data
      * @returns {*}
      */
-    post(url,data){
-        return this.send(url,'POST',data);
-    }
+    post: function(url,data){
+      return this.send(url,'POST',data);
+    },
     /**
      * DELETE Wrapper
      * @param url
      * @returns {*}
      */
-    delete(url) {
-        return this.send(url,'DELETE');
-    }
+    delete: function(url,data) {
+      return this.send(url,'DELETE',data);
+    },
     /**
      * PUT Wrapper
      * @param url
      * @param data
      * @returns {*}
      */
-    put(url,data) {
-        return this.send(url,'PUT',data);
+    put: function(url,data) {
+      return this.send(url,'PUT',data);
     }
-}
-
-export default Xhr;
+  }
+}();
