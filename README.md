@@ -8,7 +8,6 @@ Include this library.
 
     <sctipt src="path/to/Xhr.js"></script>
 
-```
 
 * Make request: 
 
