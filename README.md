@@ -1,26 +1,20 @@
 # xhr
 
-XmlHttpRequest for your es6 projects. Required features only.
+XmlHttpRequest for your es5 projects. Required features only.
 
 ##Getting started
 
-* Import this class: 
+Include this library. 
 
-```
-import Xhr from './Xhr.js';
-```
+    <sctipt src="path/to/Xhr.js"></script>
 
-* Create new xhr instance with certain options: 
-
-```
-var xhr = new Xhr({json:true}); 
 ```
 
 * Make request: 
 
-```
-xhr.post('http://url.com',{data:123}).then(function(response){...},function(err){...});
-```
+
+    xhr.post('http://url.com',{data:123}).then(function(response){...},function(err){...});
+
 
 ##Options
 
@@ -45,17 +39,9 @@ xhr.send(url, method, data);
 
 ## Installation
 
-Npm:
+BOWER: 
 
-```
-npm install kysonic-es6-xhr --save-dev
-```
-
-GIT: 
-
-```
-git clone https://github.com/kysonic/xhr.git
-```
+    bower install kysonic/xht#es5
 
 
 
