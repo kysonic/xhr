@@ -3,6 +3,7 @@ var xhr = function(){
     opts: {
       contentType: 'application/json',
       handleAs: 'json',
+      arrayBuffer: false,
       preventCache:false,
       formData: false,
       withCredentials: false
@@ -28,6 +29,7 @@ var xhr = function(){
       return new Promise(function (resolve, reject) {
         var xhr = new XMLHttpRequest();
         xhr.withCredentials = this.opts.withCredentials;
+        if(this.opts.arrayBuffer) xhr.responseType = "arraybuffer";
         var m = method || 'GET';
         xhr.open(m, url+(this.opts.preventCache?/\?/.test(url)?'&t='+Math.random():'?t='+Math.random():''));
         // Set headers
